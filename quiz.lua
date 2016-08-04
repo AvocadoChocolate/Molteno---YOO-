@@ -70,8 +70,45 @@ function newTouchListener (event)
 	end
 	return true
 end	
-		
 
+local currentLink = 0
+local currentTick = nil
+local currentQ = nil
+
+local function quizQevent(quizQ)
+	currentLink = quizQ.link 
+	currentTick = quizQ.tick
+	if (currentQ == nil)then
+		quizQ:setFillColor(0.5,0.5,0.5)
+	else
+		currentQ:setFillColor(1,1,1)
+		quizQ:setFillColor(0.5,0.5,0.5)
+	end
+	currentQ = quizQ	
+end
+
+local correct = 0
+		
+local function quizAevent(quizA)
+	if (currentLink == quizA.link)then 
+		transition.fadeIn(currentTick, {time=fadeTime}) 
+		transition.fadeIn(quizA.tick, {time=fadeTime}) 
+		quizA:removeEventListener("tap",quizAevent) 
+		currentQ:removeEventListener("tap", quizQevent) 
+		quizA:setFillColor(0.5,0.5,0.5)
+		currentQ = nil
+		currentLink = 0
+		correct = correct + 1
+		
+		if (correct == 4) then
+			timer.performWithDelay(1000, function() transition.to(sceneGroup,{time= 500, onComplete=function() transition.to(sceneGroup, {time= 500}) end})
+			composer.gotoScene("menu", {time=500, effect="crossFade"}) end)
+		end	
+	else
+		quizA:setFillColor(1,0.5,0.5)
+		timer.performWithDelay(1000, function () quizA:setFillColor(1,1,1) end)
+	end
+end
 
 
 
@@ -98,18 +135,26 @@ function scene:create( event )
 	-- qGroup.alpha = 0
 	-- qGroup.isHitTestable = true
 	
-	currentLink = 0
-	
 	for i=1,#newQuiz do			
 		local quizQ = display.newImage("images/"..sceneName.."/"..newQuiz[i].question..".png")
+		local tick = display.newImage("images/tick.png")
+		tick.anchorX = 0
+		tick.anchorY = 0
 		quizQ.anchorX = 0
 		quizQ.anchorY = 0
 		quizQ.x = xInset * 2 
+		tick.x = xInset*2.5
 		quizQ.y = ((i-1) * yInset * #newQuiz) + yInset
+		tick.y = ((i-1) * yInset * #newQuiz) + yInset+0.5*yInset
 		quizQ.link = newQuiz[i].link
 		local scaleX = xInset * 1.5 * #newQuiz/quizQ.contentWidth
 		quizQ:scale(scaleX,scaleX)
-		quizQ:addEventListener("tap",function() currentLink = quizQ.link print(currentLink) end)
+		tick:scale(scaleX/1.2,scaleX/1.2)
+		tick.alpha = 0
+		quizQ.tick = tick
+		quizQ:addEventListener("tap",function() quizQevent(quizQ) end  )
+		sceneGroup:insert(quizQ)
+		sceneGroup:insert(tick)
 	end
 	
 	local newAns = quiz
@@ -123,11 +168,21 @@ function scene:create( event )
 		quizA.anchorX = 0
 		quizA.anchorY = 0
 		quizA.x = xInset * 12 
+		local tick = display.newImage("images/tick.png")
+		tick.anchorX = 0
+		tick.anchorY = 0
+		tick.x = xInset * 12.5
 		quizA.y = ((i-1) * yInset * #newAns) + yInset
+		tick.y = ((i-1) * yInset * #newQuiz) + yInset+0.5*yInset
 		quizA.link = newAns[i].link
 		local scaleX = xInset * 1.5 * #newAns/quizA.contentWidth
 		quizA:scale(scaleX,scaleX)
-		quizA:addEventListener("tap",function() if (currentLink == quizA.link)then print ("YAY") end end)
+		tick:scale(scaleX/1.2,scaleX/1.2)
+		tick.alpha = 0
+		quizA.tick = tick
+		quizA:addEventListener("tap",function() quizAevent(quizA) end)
+		sceneGroup:insert(quizA)
+		sceneGroup:insert(tick)
 		--sceneGroup:insert(quizA)
 	end
 	--qGroup:addEventListener("touch",newTouchListener)

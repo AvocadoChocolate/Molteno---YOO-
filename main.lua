@@ -96,4 +96,5 @@ maxScenes = 7
 spacing = 2
 
 -- load menu
-composer.gotoScene( "menu" )
+--composer.gotoScene( "menu" )
+composer.gotoScene( "quiz" )
