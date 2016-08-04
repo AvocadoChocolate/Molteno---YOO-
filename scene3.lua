@@ -1,19 +1,11 @@
----------------------------------------------------------------------------------
---
--- scene.lua
---
----------------------------------------------------------------------------------
-
 local sceneName = ...
 
 local composer = require( "composer" )
 
--- Load scene with same root filename as this file
 local scene = composer.newScene( sceneName )
 
 local curScene = tonumber(sceneName:sub(6,6))
 
----------------------------------------------------------------------------------
 local xInset, yInset = display.contentWidth / 20, display.contentHeight / 20
 
 local sceneImg = sceneImages[curScene]
@@ -30,23 +22,25 @@ local pauseBtn = display.newImage("images/pause.png")
 local isPlaying = true
 local isFinished = false
 local isRecording = false
+
 local sentenceTable = {}
 
 local r=nil
+local recordingPath = system.pathForFile(sceneName.."-recording.wav", system.DocumentsDirectory)
 
 local curWord = 1
-
-local recordingPath = system.pathForFile(sceneName.."-recording.wav", system.DocumentsDirectory)
 
 local function showPrevNext(event)
 	if (curScene == 1) then
 		transition.fadeIn(nextBtn, {time=fadeTime})
-	-- elseif (curScene == maxScenes) then
-		-- transition.fadeIn(prevBtn, {time=fadeTime})
 	else
 		transition.fadeIn(prevBtn, {time=fadeTime})
 		transition.fadeIn(nextBtn, {time=fadeTime})
 	end
+	if (isRecord)then
+		transition.fadeIn(recordBtn, {time=fadeTime})
+	end
+	
 	return true
 end
 
@@ -106,7 +100,6 @@ local function highlightWords(event)
 										end)
 			else
 				timer.performWithDelay(delayTime, function() 
-										print ("ënd of highlighting")
 										if (isRecording)then
 											isRecording = false
 											r:stopRecording()
@@ -171,27 +164,21 @@ function scene:create( event )
 	homeBtn.anchorY = 0
 	homeBtn.x = xInset *0.5
 	homeBtn.y = yInset /2
-	homeBtn:scale(scaleX*1.5,scaleX*1.5)
+	homeBtn:scale(scaleX/1.3,scaleX/1.3)
 	homeBtn:addEventListener("tap",gotoHome)
 	sceneGroup:insert(homeBtn)	
 	
 	local function record(event)
-		isRecording = true
-		
+		isRecording = true	
 		
 		local exist, err = io.open(recordingPath,"r")
 		if (exist)then
 			io.close(exist)
 			os.remove(recordingPath)
 		end
-		
-		--print ("recording")
 		r = media.newRecording(recordingPath)
 		curWord = 1
 		highlightWords()
-		
-		
-		--return true
 	end
 	
 	recordBtn.anchorX = 0
@@ -201,7 +188,8 @@ function scene:create( event )
 	recordBtn:scale(scaleX*0.75,scaleX*0.75)
 	recordBtn.isVisible = false
 	recordBtn:addEventListener("tap",record)
-	sceneGroup:insert(recordBtn)	
+	recordBtn.alpha = 0
+	sceneGroup:insert(recordBtn)
 	
 	local function gotoNext(event)
 		transition.to(sceneGroup,{time= 500, y = 0, onComplete=function() transition.to(sceneGroup, {time= 500, y = 0}) end})
@@ -251,7 +239,7 @@ function scene:create( event )
 	pauseBtn.anchorY = 0
 	pauseBtn.x = xInset * 7.9
 	pauseBtn.y = display.contentHeight - yInset * 3
-	pauseBtn:scale(scaleX,scaleX)
+	pauseBtn:scale(scaleX/2,scaleX/2)
 	pauseBtn:addEventListener("tap",pressPause)
 	sceneGroup:insert(pauseBtn)
 	
@@ -294,7 +282,7 @@ function scene:create( event )
 	playBtn.anchorY = 0
 	playBtn.x = xInset * 7.9
 	playBtn.y = display.contentHeight - yInset * 3
-	playBtn:scale(scaleX,scaleX)
+	playBtn:scale(scaleX/2,scaleX/2)
 	playBtn:addEventListener("tap",pressPlay)
 	playBtn.alpha = 0
 	sceneGroup:insert(playBtn)
@@ -326,10 +314,6 @@ function scene:create( event )
 		sceneGroup:insert(mytext)
 		end
 	end
-    -- Called when the scene's view does not exist
-    -- 
-    -- INSERT code here to initialize the scene
-    -- e.g. add display objects to 'sceneGroup', add touch listeners, etc
 end
 
 function scene:show( event )
@@ -337,15 +321,13 @@ function scene:show( event )
     local phase = event.phase
 
     if phase == "will" then
-        -- Called when the scene is still off screen and is about to move on screen
 		recordBtn.isVisible = isRecord
 		playBtn.alpha = 0
 		pauseBtn.alpha = 1
 		isFinished = false
 		curWord = 1
       
-    elseif phase == "did" then
-        -- Called when the scene is now on screen	
+    elseif phase == "did" then	
 		audio.dispose(sentenceChannel)
 		audio.dispose(sentenceSound)
 		
@@ -367,13 +349,7 @@ function scene:show( event )
 				curWord = 1
 				showPrevNext()
 				transition.fadeOut(pauseBtn,{time=fadeTime/3})
-				transition.fadeIn(playBtn, {time=fadeTime/3}) end})
-        -- INSERT code here to make the scene come alive
-        -- e.g. start timers, begin animation, play audio, etc
-        
-        -- we obtain the object by id from the scene's object hierarchy
-       
-        
+				transition.fadeIn(playBtn, {time=fadeTime/3}) end})      
     end 
 end
 
@@ -388,12 +364,7 @@ function scene:hide( event )
 			isPlaying = false
 			curWord = 1
 		end
-        -- Called when the scene is on screen and is about to move off screen
-        --
-        -- INSERT code here to pause the scene
-        -- e.g. stop timers, stop animation, unload sounds, etc.)
     elseif phase == "did" then
-        -- Called when the scene is now off screen
 		composer.removeScene(sceneName,false)
     end 
 end
@@ -401,21 +372,11 @@ end
 
 function scene:destroy( event )
     local sceneGroup = self.view
-
-    -- Called prior to the removal of scene's "view" (sceneGroup)
-    -- 
-    -- INSERT code here to cleanup the scene
-    -- e.g. remove display objects, remove touch listeners, save state, etc
 end
 
----------------------------------------------------------------------------------
-
--- Listener setup
 scene:addEventListener( "create", scene )
 scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
 scene:addEventListener( "destroy", scene )
-
----------------------------------------------------------------------------------
 
 return scene

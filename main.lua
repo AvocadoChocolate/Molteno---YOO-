@@ -1,19 +1,10 @@
 ---------------------------------------------------------------------------------
---
--- main.lua
---
----------------------------------------------------------------------------------
-
--- hide the status bar
 display.setStatusBar( display.HiddenStatusBar )
 
--- require the composer library
 local composer = require "composer"
-isRecord = false
--- Add any objects that should appear on all scenes below (e.g. tab bar, hud, etc)
-fnt = "TeachersPet"
 
--- Add any system wide event handlers, location, key events, system resume/suspend, memory, etc.
+isRecord = false
+fnt = "TeachersPet"
 
 -- $ is line break
 sceneTxt = {
@@ -26,14 +17,30 @@ sceneTxt = {
 {"Lesokisi","la","ka.","$","Le","ka","mo!"}}
 
 -- {scene{word{start, end}}}
+local fakeTiming = 2.586 / 12
+local fakeTiming2 = 2.429 / 6
+
+-- txtTimings = {
+-- {{0,0.567},{0.567,0.738},{0.738,0.871},{0.871,1.009},{1.009,1.605},{0,0},{1.605,1.739},{1.739,1.851},{1.851,1.951},{1.951,2.056},{2.076,2.182},{2.182,2.3},{2.3,2.586}},
+-- {{0,1.28}},
+-- {{0,0.6},{0.6,0.738},{0.738,0.871},{0.871,1.009},{1.009,1.605},{0,0},{1.605,1.739},{1.739,1.851},{1.851,1.951},{1.951,2.056},{2.076,2.182},{2.182,2.3},{2.3,2.586}},
+-- {{0,1.123}},
+-- {{0,0.749},{0.567,0.738},{0.738,0.871},{0.871,1.009},{1.009,1.605},{0,0},{1.605,1.739},{1.739,1.851},{1.851,1.951},{1.951,2.056},{2.076,2.182},{2.182,2.3},{2.3,2.586}},
+-- {{0,1.332}},
+-- {{0,0.555},{0.555,1.042},{1.042,1.394},{0,0},{1.394,1.606},{1.606,1.971},{1.971,2.429}}
+-- }
+
+
+-- fake timings
 txtTimings = {
-{{0,0.567},{0.567,0.738},{0.738,0.871},{0.871,1.009},{1.009,1.605},{0,0},{1.605,1.739},{1.739,1.851},{1.851,1.951},{1.951,2.056},{2.076,2.182},{2.182,2.3},{2.3,2.586}},
-{{0,1.28}},
-{{0,0.6},{0.6,0.738},{0.738,0.871},{0.871,1.009},{1.009,1.605},{0,0},{1.605,1.739},{1.739,1.851},{1.851,1.951},{1.951,2.056},{2.076,2.182},{2.182,2.3},{2.3,2.586}},
-{{0,1.123}},
-{{0,0.749},{0.567,0.738},{0.738,0.871},{0.871,1.009},{1.009,1.605},{0,0},{1.605,1.739},{1.739,1.851},{1.851,1.951},{1.951,2.056},{2.076,2.182},{2.182,2.3},{2.3,2.586}},
-{{0,1.332}},
-{{0,0.555},{0.555,1.042},{1.042,1.394},{0,0},{1.394,1.606},{1.606,1.971},{1.971,2.429}}
+	{{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,0},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming}},
+	{{0,1.28}},
+	{{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,0},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming}},
+	{{0,1.28}},
+	{{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,0},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming},{0,fakeTiming}},
+	{{0,1.28}},
+	{{0,fakeTiming2},{0,fakeTiming2},{0,fakeTiming2},{0,0},{0,fakeTiming2},{0,fakeTiming2},{0,fakeTiming2}}
+	
 }
 
 sceneImages = {
@@ -96,4 +103,4 @@ maxScenes = 7
 spacing = 2
 
 -- load menu
-composer.gotoScene( "menu" )
+composer.gotoScene( "menu")

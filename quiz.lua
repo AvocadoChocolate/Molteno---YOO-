@@ -76,6 +76,7 @@ local currentTick = nil
 local currentQ = nil
 
 local function quizQevent(quizQ)
+	if (quizQ.use)then
 	currentLink = quizQ.link 
 	currentTick = quizQ.tick
 	if (currentQ == nil)then
@@ -85,21 +86,24 @@ local function quizQevent(quizQ)
 		quizQ:setFillColor(0.5,0.5,0.5)
 	end
 	currentQ = quizQ	
+	end
 end
 
 local correct = 0
 		
 local function quizAevent(quizA)
+	if (quizA.use) then
 	if (currentLink == quizA.link)then 
 		transition.fadeIn(currentTick, {time=fadeTime}) 
 		transition.fadeIn(quizA.tick, {time=fadeTime}) 
-		quizA:removeEventListener("tap",quizAevent) 
-		currentQ:removeEventListener("tap", quizQevent) 
+		quizA.use=false
+		currentQ.use=false
+		quizA:removeEventListener("tap",function() quizAevent(quizA) end) 
+		currentQ:removeEventListener("tap", function() quizQevent(currentQ) end) 
 		quizA:setFillColor(0.5,0.5,0.5)
 		currentQ = nil
 		currentLink = 0
-		correct = correct + 1
-		
+		correct = correct + 1		
 		if (correct == 4) then
 			timer.performWithDelay(1000, function() transition.to(sceneGroup,{time= 500, onComplete=function() transition.to(sceneGroup, {time= 500}) end})
 			composer.gotoScene("menu", {time=500, effect="crossFade"}) end)
@@ -108,9 +112,8 @@ local function quizAevent(quizA)
 		quizA:setFillColor(1,0.5,0.5)
 		timer.performWithDelay(1000, function () quizA:setFillColor(1,1,1) end)
 	end
+	end
 end
-
-
 
 math.randomseed(os.time())
 
@@ -129,11 +132,6 @@ function scene:create( event )
 		j = rand(i)
 		newQuiz[i], newQuiz[j] = newQuiz[j], newQuiz[i]
 	end	
-	-- local qGroup = display.newRect(xInset*2,yInset,xInset*16,yInset*#newQuiz*3.9)
-	-- qGroup.anchorX = 0
-	-- qGroup.anchorY = 0
-	-- qGroup.alpha = 0
-	-- qGroup.isHitTestable = true
 	
 	for i=1,#newQuiz do			
 		local quizQ = display.newImage("images/"..sceneName.."/"..newQuiz[i].question..".png")
@@ -152,6 +150,7 @@ function scene:create( event )
 		tick:scale(scaleX/1.2,scaleX/1.2)
 		tick.alpha = 0
 		quizQ.tick = tick
+		quizQ.use=true
 		quizQ:addEventListener("tap",function() quizQevent(quizQ) end  )
 		sceneGroup:insert(quizQ)
 		sceneGroup:insert(tick)
@@ -180,12 +179,11 @@ function scene:create( event )
 		tick:scale(scaleX/1.2,scaleX/1.2)
 		tick.alpha = 0
 		quizA.tick = tick
+		quizA.use=true
 		quizA:addEventListener("tap",function() quizAevent(quizA) end)
 		sceneGroup:insert(quizA)
 		sceneGroup:insert(tick)
-		--sceneGroup:insert(quizA)
 	end
-	--qGroup:addEventListener("touch",newTouchListener)
 	
 	local gradient = display.newRect(0, display.contentHeight - yInset*2, display.contentWidth, yInset*2)
 	gradient.anchorX = 0
@@ -199,77 +197,48 @@ function scene:create( event )
 	gradient:setFillColor(gradientColor)
 	sceneGroup:insert(gradient)
 	
-	-- local function gotoHome(event)
-		-- transition.to(sceneGroup,{time= 500, onComplete=function() transition.to(sceneGroup, {time= 500}) end})
-		-- composer.gotoScene("menu", {time=500, effect="crossFade"})
-		-- return true
-	-- end
+	local function gotoHome(event)
+		transition.to(sceneGroup,{time= 500, onComplete=function() transition.to(sceneGroup, {time= 500}) end})
+		composer.gotoScene("menu", {time=500, effect="crossFade"})
+		return true
+	end
 	
-	-- local homeBtn = display.newImage("images/home.png")
-	-- homeBtn.anchorX = 0
-	-- homeBtn.anchorY = 0
-	-- homeBtn.x = xInset *0.5
-	-- homeBtn.y = yInset /2
-	-- homeBtn:scale(scaleX*3,scaleX*3)
-	-- homeBtn:addEventListener("tap",gotoHome)
-	-- sceneGroup:insert(homeBtn)	
-	
-	-- local function gotoNext(event)
-		-- transition.to(sceneGroup,{time= 500, y = 0, onComplete=function() transition.to(sceneGroup, {time= 500, y = 0}) end})
-		-- composer.gotoScene("home", {time=500,effect="crossFade"})
+	local homeBtn = display.newImage("images/home.png")
+	homeBtn.anchorX = 0
+	homeBtn.anchorY = 0
+	homeBtn.x = xInset * 8.5
+	homeBtn.y = display.contentHeight - yInset * 3
+	homeBtn:scale(0.5,0.5)
+	homeBtn:addEventListener("tap",gotoHome)
+	sceneGroup:insert(homeBtn)
 
-		-- return true
-	-- end
+	local function gotoPrev(event)
+		transition.to(sceneGroup,{time= 500, onComplete=function() transition.to(sceneGroup, {time= 500}) end})
+		composer.gotoScene("scene"..tostring(maxScenes), {time=500, effect="crossFade"})
+		return true
+	end
 	
-	-- local function gotoPrev(event)
-		-- transition.to(sceneGroup,{time= 500, onComplete=function() transition.to(sceneGroup, {time= 500}) end})
-		-- local prv = maxScenes
-		-- composer.gotoScene("scene"..tostring(prv), {time=500, effect="crossFade"})
-		-- return true
-	-- end
+	local prevBtn = display.newImage("images/Previous-Page-arrow.png")
+	prevBtn.anchorX = 0
+	prevBtn.anchorY = 0
+	prevBtn.x = xInset * 2
+	prevBtn.y = display.contentHeight - yInset * 3
+	prevBtn:scale(0.8,0.8)
+	prevBtn.alpha = 1
+	prevBtn:addEventListener("tap",gotoPrev)
+	sceneGroup:insert(prevBtn)	
 	
-	-- prevBtn.anchorX = 0
-	-- prevBtn.anchorY = 0
-	-- prevBtn.x = xInset * 2
-	-- prevBtn.y = display.contentHeight - yInset * 3
-	-- prevBtn:scale(scaleX*2,scaleX*2)
-	-- prevBtn.alpha = 0
-	-- prevBtn:addEventListener("tap",gotoPrev)
-	-- sceneGroup:insert(prevBtn)	
 	
-	-- nextBtn.anchorX = 0
-	-- nextBtn.anchorY = 0
-	-- nextBtn.x = display.contentWidth - xInset * 6
-	-- nextBtn.y = display.contentHeight - yInset * 3
-	-- nextBtn:scale(scaleX*2,scaleX*2)
-	-- nextBtn.alpha = 0
-	-- nextBtn:addEventListener("tap",gotoNext)
-	-- sceneGroup:insert(nextBtn)	
-	
-
-    -- Called when the scene's view does not exist
-    -- 
-    -- INSERT code here to initialize the scene
-    -- e.g. add display objects to 'sceneGroup', add touch listeners, etc
 end
 
 function scene:show( event )
     local sceneGroup = self.view
     local phase = event.phase
 
-    if phase == "will" then
-        -- Called when the scene is still off screen and is about to move on screen
-		
+    if phase == "will" then		
       
     elseif phase == "did" then
-        -- Called when the scene is now on screen		
-		
-        -- INSERT code here to make the scene come alive
-        -- e.g. start timers, begin animation, play audio, etc
-        
-        -- we obtain the object by id from the scene's object hierarchy
-       
-        
+ 
     end 
 end
 
@@ -279,35 +248,19 @@ function scene:hide( event )
 
     if event.phase == "will" then
 		
-		
-        -- Called when the scene is on screen and is about to move off screen
-        --
-        -- INSERT code here to pause the scene
-        -- e.g. stop timers, stop animation, unload sounds, etc.)
     elseif phase == "did" then
-        -- Called when the scene is now off screen
-		
+		composer.removeScene(sceneName,false)
     end 
 end
 
 
 function scene:destroy( event )
     local sceneGroup = self.view
-
-    -- Called prior to the removal of scene's "view" (sceneGroup)
-    -- 
-    -- INSERT code here to cleanup the scene
-    -- e.g. remove display objects, remove touch listeners, save state, etc
 end
 
----------------------------------------------------------------------------------
-
--- Listener setup
 scene:addEventListener( "create", scene )
 scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
 scene:addEventListener( "destroy", scene )
-
----------------------------------------------------------------------------------
 
 return scene

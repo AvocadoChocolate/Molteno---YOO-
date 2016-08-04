@@ -8,6 +8,9 @@ local sceneName = ...
 
 local composer = require( "composer" )
 
+local coverArm = require("cover-arm")
+local coverSock = require("cover-sock")
+
 -- Load scene with same root filename as this file
 local scene = composer.newScene( sceneName )
 
@@ -31,6 +34,7 @@ function scene:create( event )
 	yooTitle:scale(xInset*16/yooTitle.contentWidth, xInset*16/yooTitle.contentWidth)
 	sceneGroup:insert(yooTitle)
 	
+
 	local cover = display.newImage("images/cover-background.png")
 	cover.anchorX = 0
 	cover.anchorY = 0
@@ -40,23 +44,53 @@ function scene:create( event )
 	cover:scale(scaleX, scaleX)	
 	sceneGroup:insert(cover)
 	
+	
 	local localInsetX, localInsetY = cover.contentWidth/20, cover.contentHeight/20
 	
-	local aniFoot = display.newImage("images/cover-sock-and-foot-pos-1.png")
-	aniFoot.anchorX = 0
-	aniFoot.anchorY = 0	
-	aniFoot.x = cover.x + localInsetX * 5.85 -- working magic number
-	aniFoot.y = cover.y + localInsetY * 12.9 -- working magic number
-	aniFoot:scale(scaleX,scaleX)
-	sceneGroup:insert(aniFoot)	
+	local sheet_Foot = graphics.newImageSheet("images/cover-sock.png",coverSock:getSheet())
+
 	
-	local aniArm = display.newImage("images/cover-arm-pos-1.png")
-	aniArm.anchorX = 0
-	aniArm.anchorY = 0
-	aniArm.x = cover.x + localInsetX * 5.8 -- working magic number
-	aniArm.y = cover.y + localInsetY * 3.7-- working magic number
-	aniArm:scale(scaleX,scaleX)
-	sceneGroup:insert(aniArm)	
+	local movingFoot = display.newSprite(sheet_Foot,{frames=coverSock:getFrames()})
+	movingFoot.anchorX = 0
+	movingFoot.anchorY = 0
+	movingFoot.x = cover.x + localInsetX * 5.85 -- working magic number
+	movingFoot.y = cover.y + localInsetY * 12.9-- working magic number
+	movingFoot:scale(scaleX,scaleX)
+	sceneGroup:insert(movingFoot)
+	movingFoot:play()
+	
+	
+	
+	
+	local sheetOptionsArm =
+	{
+		width = 75,
+		height = 78,
+		numFrames = 1
+	}
+	local sheet_Arm = graphics.newImageSheet("images/cover-arm.png",sheetOptionsArm)
+	local sequences_Arm = {
+		{
+			name="normalArm",
+			start=1,
+			count=2,
+			time= 500,
+			loopCount = 0,
+			loopDirection = "forward"
+		}
+	}
+	
+	local movingArm = display.newSprite(sheet_Arm,sequences_Arm)
+	
+	
+	--local aniArm = display.newImage("images/cover-arm-pos-1.png")
+	movingArm.anchorX = 0
+	movingArm.anchorY = 0
+	movingArm.x = cover.x + localInsetX * 5.8 -- working magic number
+	movingArm.y = cover.y + localInsetY * 3.7-- working magic number
+	movingArm:scale(scaleX,scaleX)
+	sceneGroup:insert(movingArm)
+	movingArm:play()
 	
 	local gradient = display.newRect(0, display.contentHeight - yInset*2, display.contentWidth, yInset*2)
 	gradient.anchorX = 0
