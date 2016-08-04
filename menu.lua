@@ -72,12 +72,14 @@ function scene:create( event )
 	
 	local function gotoRead(event)
 		isRecord = false
+		audio.stop()
 		transition.to(sceneGroup, {time = 500, y = 0, onComplete=function() transition.to(menuGroup, {500, x = 0}) end})
 		composer.gotoScene("scene1", {time=500,effect="crossFade"})		
 		return true
 	end
 	local function gotoRecord(event)
 		isRecord = true
+		audio.stop()
 		transition.to(sceneGroup, {time = 500, y = 0, onComplete=function() transition.to(menuGroup, {500, x = 0}) end})
 		composer.gotoScene("scene1", {time=500,effect="fade"})		
 		return true
@@ -113,7 +115,7 @@ function scene:show( event )
 
     if phase == "will" then
         -- Called when the scene is still off screen and is about to move on screen
-      
+		
     elseif phase == "did" then
         -- Called when the scene is now on screen
         -- 
@@ -121,7 +123,7 @@ function scene:show( event )
         -- e.g. start timers, begin animation, play audio, etc
         
         -- we obtain the object by id from the scene's object hierarchy    
-        
+        audio.play(audio.loadSound("sounds/cover.wav"))
     end 
 end
 

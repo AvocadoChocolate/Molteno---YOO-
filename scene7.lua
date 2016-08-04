@@ -23,13 +23,16 @@ local timings = txtTimings[curScene]
 local prevBtn = display.newImage("images/Previous-Page-arrow.png")
 local nextBtn = display.newImage("images/Next-Page-arrow.png")
 local recordBtn = display.newImage("images/record-voice-button.png")
+local homeBtn = display.newImage("images/home.png")
+local playBtn = display.newImage("images/play.png")
+local pauseBtn = display.newImage("images/pause.png")
 
 local isPlaying = true
 local isFinished = false
 local isRecording = false
 local sentenceTable = {}
 
-local r
+local r=nil
 
 local curWord = 1
 
@@ -47,6 +50,25 @@ local function showPrevNext(event)
 	return true
 end
 
+local function hideAll()
+	transition.fadeOut(prevBtn, {time=fadeTime})
+	transition.fadeOut(nextBtn, {time=fadeTime})
+	transition.fadeOut(playBtn, {time=fadeTime})
+	transition.fadeOut(pauseBtn, {time=fadeTime})
+	transition.fadeOut(homeBtn, {time=fadeTime})
+end
+
+local function showAll()
+	if (curScene == 1) then
+		transition.fadeIn(nextBtn, {time=fadeTime})
+	else
+		transition.fadeIn(prevBtn, {time=fadeTime})
+		transition.fadeIn(nextBtn, {time=fadeTime})
+	end
+	transition.fadeIn(playBtn, {time=fadeTime})
+	transition.fadeIn(homeBtn, {time=fadeTime})
+end
+
 local function clearHighlight()
 	local curSceneText = sceneTxt[curScene]
 	for i=1,#curSceneText do
@@ -58,9 +80,14 @@ local function clearHighlight()
 end
 
 local function highlightWords(event)
-	if (isPlaying) then
+	if (isPlaying or isRecording) then
 		 if (curWord == 1) then
 			clearHighlight()
+			if (isRecording) then
+				r:startRecording()
+				hideAll()
+				print ("started recording")
+			end
 		 end
 		local curSceneText = sceneTxt[curScene]
 		if (curSceneText[curWord] == "$") then
@@ -68,23 +95,27 @@ local function highlightWords(event)
 		end	
 		
 		local word = sentenceTable[curWord]
-		word:setFillColor(0,150/255,14/255)
-		local timingsPW = timings[curWord]
-		local delayTime = (timingsPW[2] - timingsPW[1])*1000
-		if (curWord < #curSceneText) then
-			timer.performWithDelay(delayTime, function() 
+		if (word ~= nil)then
+			word:setFillColor(0,150/255,14/255)
+			local timingsPW = timings[curWord]
+			local delayTime = (timingsPW[2] - timingsPW[1])*1000
+			if (curWord < #curSceneText) then
+				timer.performWithDelay(delayTime, function() 
 										curWord = curWord + 1
 										highlightWords()
 										end)
-		else
-			timer.performWithDelay(delayTime, function() 
-										--local oldWord = sentenceTable[#curSceneText]
-										--oldWord:setFillColor(0,0,0)
-										if (isRecording) then
+			else
+				timer.performWithDelay(delayTime, function() 
+										print ("ënd of highlighting")
+										if (isRecording)then
+											isRecording = false
 											r:stopRecording()
+											showAll()
+											print ("stopped recording")
 										end
 										end)
-		end	
+			end	
+		end
 	else
 	end
 	return true
@@ -96,7 +127,7 @@ function scene:create( event )
 	bg.anchorX = 0
 	bg.anchorY = 0
 	sceneGroup:insert(bg)
-	
+
 	local image = display.newImage("images/"..sceneName.."/"..sceneImg.background..".png")
 	image.anchorX = 0
 	image.anchorY = 0
@@ -136,29 +167,38 @@ function scene:create( event )
 		return true
 	end
 	
-	local homeBtn = display.newImage("images/home.png")
 	homeBtn.anchorX = 0
 	homeBtn.anchorY = 0
 	homeBtn.x = xInset *0.5
 	homeBtn.y = yInset /2
-	homeBtn:scale(scaleX*3,scaleX*3)
+	homeBtn:scale(scaleX*1.5,scaleX*1.5)
 	homeBtn:addEventListener("tap",gotoHome)
 	sceneGroup:insert(homeBtn)	
 	
 	local function record(event)
 		isRecording = true
-		print ("recording")
+		
+		
+		local exist, err = io.open(recordingPath,"r")
+		if (exist)then
+			io.close(exist)
+			os.remove(recordingPath)
+		end
+		
+		--print ("recording")
+		r = media.newRecording(recordingPath)
 		curWord = 1
 		highlightWords()
-		r = media.newRecording(recordingPath)
-		r:startRecording()
+		
+		
+		--return true
 	end
 	
 	recordBtn.anchorX = 0
 	recordBtn.anchorY = 0
 	recordBtn.x = display.contentWidth - xInset * 4
 	recordBtn.y = yInset/2
-	recordBtn:scale(scaleX*1.25,scaleX*1.25)
+	recordBtn:scale(scaleX*0.75,scaleX*0.75)
 	recordBtn.isVisible = false
 	recordBtn:addEventListener("tap",record)
 	sceneGroup:insert(recordBtn)	
@@ -185,7 +225,7 @@ function scene:create( event )
 	prevBtn.anchorY = 0
 	prevBtn.x = xInset * 2
 	prevBtn.y = display.contentHeight - yInset * 3
-	prevBtn:scale(scaleX*2,scaleX*2)
+	prevBtn:scale(scaleX,scaleX)
 	prevBtn.alpha = 0
 	prevBtn:addEventListener("tap",gotoPrev)
 	sceneGroup:insert(prevBtn)	
@@ -194,13 +234,10 @@ function scene:create( event )
 	nextBtn.anchorY = 0
 	nextBtn.x = display.contentWidth - xInset * 6
 	nextBtn.y = display.contentHeight - yInset * 3
-	nextBtn:scale(scaleX*2,scaleX*2)
+	nextBtn:scale(scaleX,scaleX)
 	nextBtn.alpha = 0
 	nextBtn:addEventListener("tap",gotoNext)
 	sceneGroup:insert(nextBtn)	
-	
-	playBtn = display.newImage("images/play.png")
-	pauseBtn = display.newImage("images/pause.png")
 	
 	local function pressPause(event)
 		isPlaying = false
@@ -214,11 +251,13 @@ function scene:create( event )
 	pauseBtn.anchorY = 0
 	pauseBtn.x = xInset * 7.9
 	pauseBtn.y = display.contentHeight - yInset * 3
-	pauseBtn:scale(scaleX*2,scaleX*2)
+	pauseBtn:scale(scaleX,scaleX)
 	pauseBtn:addEventListener("tap",pressPause)
 	sceneGroup:insert(pauseBtn)
 	
 	local function pressPlay(event)
+		audio.dispose(sentenceChannel)
+		audio.dispose(sentenceSound)
 		if (isRecord)then
 			local exist, err = io.open(recordingPath,"r")
 			if (exist)then
@@ -238,7 +277,7 @@ function scene:create( event )
 		if (isFinished) then
 			isFinished = false
 			curWord=1
-			audio.play(sentenceSound, {onComplete= function()
+			sentenceChannel = audio.play(sentenceSound, {onComplete= function()
 				curWord=1
 				isPlaying = false
 				isFinished = true
@@ -255,7 +294,7 @@ function scene:create( event )
 	playBtn.anchorY = 0
 	playBtn.x = xInset * 7.9
 	playBtn.y = display.contentHeight - yInset * 3
-	playBtn:scale(scaleX*2,scaleX*2)
+	playBtn:scale(scaleX,scaleX)
 	playBtn:addEventListener("tap",pressPlay)
 	playBtn.alpha = 0
 	sceneGroup:insert(playBtn)
@@ -307,6 +346,8 @@ function scene:show( event )
       
     elseif phase == "did" then
         -- Called when the scene is now on screen	
+		audio.dispose(sentenceChannel)
+		audio.dispose(sentenceSound)
 		
 		highlightWords()
 		if (isRecord)then
@@ -320,7 +361,7 @@ function scene:show( event )
 		else
 			sentenceSound = audio.loadSound("sounds/"..sceneName..".mp3")
 		end
-        audio.play(sentenceSound, {onComplete= function()
+        sentenceChannel = audio.play(sentenceSound, {onComplete= function()
 				isPlaying = false
 				isFinished = true
 				curWord = 1
