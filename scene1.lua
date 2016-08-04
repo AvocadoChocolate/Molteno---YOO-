@@ -16,23 +16,78 @@ local curScene = tonumber(sceneName:sub(6,6))
 ---------------------------------------------------------------------------------
 local xInset, yInset = display.contentWidth / 20, display.contentHeight / 20
 
+local sceneImg = sceneImages[curScene]
+local sceneParts = sceneImg.parts
+local timings = txtTimings[curScene]
+
 local prevBtn = display.newImage("images/Previous-Page-arrow.png")
 local nextBtn = display.newImage("images/Next-Page-arrow.png")
 local recordBtn = display.newImage("images/record-voice-button.png")
 
 local isPlaying = true
 local isFinished = false
+local isRecording = false
 local sentenceTable = {}
+
+local r
+
+local curWord = 1
+
+local recordingPath = system.pathForFile(sceneName.."-recording.wav", system.DocumentsDirectory)
 
 local function showPrevNext(event)
 	if (curScene == 1) then
 		transition.fadeIn(nextBtn, {time=fadeTime})
-	elseif (curScene == maxScenes) then
-		transition.fadeIn(prevBtn, {time=fadeTime})
+	-- elseif (curScene == maxScenes) then
+		-- transition.fadeIn(prevBtn, {time=fadeTime})
 	else
 		transition.fadeIn(prevBtn, {time=fadeTime})
 		transition.fadeIn(nextBtn, {time=fadeTime})
 	end
+	return true
+end
+
+local function clearHighlight()
+	local curSceneText = sceneTxt[curScene]
+	for i=1,#curSceneText do
+		if (curSceneText[i] ~= "$") then
+			local oldWord = sentenceTable[i]
+			oldWord:setFillColor(0,0,0)
+		end
+	end
+end
+
+local function highlightWords(event)
+	if (isPlaying) then
+		 if (curWord == 1) then
+			clearHighlight()
+		 end
+		local curSceneText = sceneTxt[curScene]
+		if (curSceneText[curWord] == "$") then
+			curWord = curWord + 1
+		end	
+		
+		local word = sentenceTable[curWord]
+		word:setFillColor(0,150/255,14/255)
+		local timingsPW = timings[curWord]
+		local delayTime = (timingsPW[2] - timingsPW[1])*1000
+		if (curWord < #curSceneText) then
+			timer.performWithDelay(delayTime, function() 
+										curWord = curWord + 1
+										highlightWords()
+										end)
+		else
+			timer.performWithDelay(delayTime, function() 
+										--local oldWord = sentenceTable[#curSceneText]
+										--oldWord:setFillColor(0,0,0)
+										if (isRecording) then
+											r:stopRecording()
+										end
+										end)
+		end	
+	else
+	end
+	return true
 end
 
 function scene:create( event )
@@ -42,7 +97,7 @@ function scene:create( event )
 	bg.anchorY = 0
 	sceneGroup:insert(bg)
 	
-	local image = display.newImage("images/"..sceneName.."/"..sceneName.."-background.png")
+	local image = display.newImage("images/"..sceneName.."/"..sceneImg.background..".png")
 	image.anchorX = 0
 	image.anchorY = 0
 	image.x = xInset*1.5
@@ -53,45 +108,15 @@ function scene:create( event )
 	
 	local localInsetX, localInsetY = image.contentWidth/20, image.contentHeight/20
 	
-	local aniArm = display.newImage("images/scene1/Scene-1-boy-pos-2-Arm-1.png")
-	aniArm.anchorX = 0
-	aniArm.anchorY = 0
-	aniArm.x = image.x + localInsetX * 6.2
-	aniArm.y = image.y + localInsetY * 2
-	aniArm:scale(scaleX,scaleX)
-	sceneGroup:insert(aniArm)
-	
-	local aniBoy = display.newImage("images/scene1/scene-1-boy-pos-2.png")
-	aniBoy.anchorX = 0
-	aniBoy.anchorY = 0
-	aniBoy.x = image.x + localInsetX * 3.4
-	aniBoy.y = image.y + localInsetY * 3.5
-	aniBoy:scale(scaleX,scaleX)
-	sceneGroup:insert(aniBoy)
-	
-	local aniSpider = display.newImage("images/scene1/scene-1-spider-pos-1.png")
-	aniSpider.anchorX = 0
-	aniSpider.anchorY = 0
-	aniSpider.x = image.x + localInsetX * 11.5
-	aniSpider.y = image.y + localInsetY * 6.3
-	aniSpider:scale(scaleX,scaleX)
-	sceneGroup:insert(aniSpider)
-
-	local aniSock = display.newImage("images/scene1/Scene-1-boy-pos-2-Sock-1.png")
-	aniSock.anchorX = 0
-	aniSock.anchorY = 0
-	aniSock.x = image.x + localInsetX * 2.6
-	aniSock.y = image.y + localInsetY * 11.8
-	aniSock:scale(scaleX,scaleX)
-	sceneGroup:insert(aniSock)
-	
-	local aniFlame = display.newImage("images/scene1/Scene-1-flame-pos-1.png")
-	aniFlame.anchorX = 0
-	aniFlame.anchorY = 0
-	aniFlame.x = image.x + localInsetX * 9.15
-	aniFlame.y = image.y + localInsetY * 3.5
-	aniFlame:scale(scaleX,scaleX)
-	sceneGroup:insert(aniFlame)
+	for i=1,#sceneParts do			
+		local aniPart = display.newImage("images/"..sceneName.."/"..sceneParts[i].file..".png")
+		aniPart.anchorX = 0
+		aniPart.anchorY = 0
+		aniPart.x = image.x + localInsetX * sceneParts[i].x
+		aniPart.y = image.y + localInsetY * sceneParts[i].y
+		aniPart:scale(scaleX,scaleX)
+		sceneGroup:insert(aniPart)
+	end
 	
 	local gradient = display.newRect(0, display.contentHeight - yInset*2, display.contentWidth, yInset*2)
 	gradient.anchorX = 0
@@ -106,7 +131,7 @@ function scene:create( event )
 	sceneGroup:insert(gradient)
 	
 	local function gotoHome(event)
-		transition.to(sceneGroup,{time= 500, y = 0, onComplete=function() transition.to(sceneGroup, {time= 500, y = 0}) end})
+		transition.to(sceneGroup,{time= 500, onComplete=function() transition.to(sceneGroup, {time= 500}) end})
 		composer.gotoScene("menu", {time=500, effect="crossFade"})
 		return true
 	end
@@ -120,23 +145,37 @@ function scene:create( event )
 	homeBtn:addEventListener("tap",gotoHome)
 	sceneGroup:insert(homeBtn)	
 	
+	local function record(event)
+		isRecording = true
+		print ("recording")
+		curWord = 1
+		highlightWords()
+		r = media.newRecording(recordingPath)
+		r:startRecording()
+	end
+	
 	recordBtn.anchorX = 0
 	recordBtn.anchorY = 0
 	recordBtn.x = display.contentWidth - xInset * 4
 	recordBtn.y = yInset/2
 	recordBtn:scale(scaleX*1.25,scaleX*1.25)
 	recordBtn.isVisible = false
+	recordBtn:addEventListener("tap",record)
 	sceneGroup:insert(recordBtn)	
 	
 	local function gotoNext(event)
 		transition.to(sceneGroup,{time= 500, y = 0, onComplete=function() transition.to(sceneGroup, {time= 500, y = 0}) end})
 		local nxt = curScene+1
-		composer.gotoScene("scene"..tostring(nxt), {time=500, effect="crossFade"})
+		if (nxt == maxScenes+1)then
+			composer.gotoScene("quiz", {time=500,effect="crossFade"})
+		else		
+			composer.gotoScene("scene"..tostring(nxt), {time=500, effect="crossFade"})
+		end
 		return true
 	end
 	
 	local function gotoPrev(event)
-		transition.to(sceneGroup,{time= 500, y = 0, onComplete=function() transition.to(sceneGroup, {time= 500, y = 0}) end})
+		transition.to(sceneGroup,{time= 500, onComplete=function() transition.to(sceneGroup, {time= 500}) end})
 		local prv = curScene-1
 		composer.gotoScene("scene"..tostring(prv), {time=500, effect="crossFade"})
 		return true
@@ -163,17 +202,6 @@ function scene:create( event )
 	playBtn = display.newImage("images/play.png")
 	pauseBtn = display.newImage("images/pause.png")
 	
-	sentenceSound = audio.loadSound("sounds/"..sceneName..".mp3")
-	-- sentenceChannel = audio.play(sentenceSound, {onComplete= function()
-		-- isPlaying = false
-		-- isFinished = true
-		-- showPrevNext()
-		-- transition.fadeOut(pauseBtn,{time=fadeTime/3})
-		-- transition.fadeIn(playBtn, {time=fadeTime/3})
-	-- end
-	-- }	
-	-- )
-	
 	local function pressPause(event)
 		isPlaying = false
 		transition.fadeOut(pauseBtn,{time=fadeTime/3})
@@ -191,13 +219,27 @@ function scene:create( event )
 	sceneGroup:insert(pauseBtn)
 	
 	local function pressPlay(event)
+		if (isRecord)then
+			local exist, err = io.open(recordingPath,"r")
+			if (exist)then
+				io.close(exist)
+				sentenceSound = audio.loadSound(sceneName.."-recording.wav",system.DocumentsDirectory)
+			else
+				sentenceSound = audio.loadSound("sounds/"..sceneName..".mp3")
+			end
+		else
+			sentenceSound = audio.loadSound("sounds/"..sceneName..".mp3")
+		end
+			
 		isPlaying = true
 		transition.fadeOut(playBtn,{time=fadeTime/3})
 		transition.fadeIn(pauseBtn, {time=fadeTime/3})
-		
+		highlightWords()
 		if (isFinished) then
 			isFinished = false
+			curWord=1
 			audio.play(sentenceSound, {onComplete= function()
+				curWord=1
 				isPlaying = false
 				isFinished = true
 				showPrevNext()
@@ -236,12 +278,11 @@ function scene:create( event )
 		local mytext = display.newText(options)
 		mytext.anchorX = 0
 		mytext.anchorY = 0
-		mytext:setFillColor(0,0,0)
-		
-		
+		mytext:setFillColor(0,0,0)		
 		mytext.x = xInset * 2 + width
 		width = width + mytext.contentWidth + xInset/spacing
 		mytext.y = textHeight
+		
 		sentenceTable[i] = mytext
 		sceneGroup:insert(mytext)
 		end
@@ -262,12 +303,27 @@ function scene:show( event )
 		playBtn.alpha = 0
 		pauseBtn.alpha = 1
 		isFinished = false
+		curWord = 1
       
     elseif phase == "did" then
-        -- Called when the scene is now on screen
+        -- Called when the scene is now on screen	
+		
+		highlightWords()
+		if (isRecord)then
+			local exist, err = io.open(recordingPath,"r")
+			if (exist)then
+				io.close(exist)
+				sentenceSound = audio.loadSound(sceneName.."-recording.wav",system.DocumentsDirectory)
+			else
+				sentenceSound = audio.loadSound("sounds/"..sceneName..".mp3")
+			end
+		else
+			sentenceSound = audio.loadSound("sounds/"..sceneName..".mp3")
+		end
         audio.play(sentenceSound, {onComplete= function()
 				isPlaying = false
 				isFinished = true
+				curWord = 1
 				showPrevNext()
 				transition.fadeOut(pauseBtn,{time=fadeTime/3})
 				transition.fadeIn(playBtn, {time=fadeTime/3}) end})
@@ -287,7 +343,9 @@ function scene:hide( event )
     if event.phase == "will" then
 		if (isPlaying) then
 			audio.stop()
-			isPlaying = false			
+			isFinished = true
+			isPlaying = false
+			curWord = 1
 		end
         -- Called when the scene is on screen and is about to move off screen
         --
@@ -295,7 +353,7 @@ function scene:hide( event )
         -- e.g. stop timers, stop animation, unload sounds, etc.)
     elseif phase == "did" then
         -- Called when the scene is now off screen
-		
+		composer.removeScene(sceneName,false)
     end 
 end
 
