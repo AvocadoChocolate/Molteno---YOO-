@@ -195,7 +195,7 @@ function scene:create( event )
 		transition.to(sceneGroup,{time= 500, y = 0, onComplete=function() transition.to(sceneGroup, {time= 500, y = 0}) end})
 		local nxt = curScene+1
 		if (nxt == maxScenes+1)then
-			composer.gotoScene("quiz", {time=500,effect="crossFade"})
+			composer.gotoScene("home", {time=500,effect="crossFade"})
 		else		
 			composer.gotoScene("scene"..tostring(nxt), {time=500, effect="crossFade"})
 		end
