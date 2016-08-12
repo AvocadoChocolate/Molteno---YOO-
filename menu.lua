@@ -141,8 +141,8 @@ function scene:create( event )
 	recordBtn.anchorX = 0
 	recordBtn.anchorY = 0
 	recordBtn.x = display.contentWidth - xInset * 6
-	recordBtn.y = display.contentHeight - yInset * 4
-	recordBtn:scale(scaleX*5/6,scaleX*5/6)
+	recordBtn.y = display.contentHeight - yInset * 3.7
+	recordBtn:scale(scaleX*2/3,scaleX*2/3)
 	recordBtn:addEventListener("tap", gotoRecord)
 	sceneGroup:insert(recordBtn)
 

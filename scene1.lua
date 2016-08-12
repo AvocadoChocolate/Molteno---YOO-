@@ -278,9 +278,9 @@ function scene:create( event )
 	
 	homeBtn.anchorX = 0
 	homeBtn.anchorY = 0
-	homeBtn.x = xInset *0.5
+	homeBtn.x = xInset *7.5
 	homeBtn.y = yInset /2
-	homeBtn:scale(scaleX/1.3,scaleX/1.3)
+	homeBtn:scale(scaleX/2.5,scaleX/2.5)
 	homeBtn:addEventListener("tap",gotoHome)
 	sceneGroup:insert(homeBtn)	
 	
@@ -327,18 +327,18 @@ function scene:create( event )
 	
 	prevBtn.anchorX = 0
 	prevBtn.anchorY = 0
-	prevBtn.x = xInset * 2
-	prevBtn.y = display.contentHeight - yInset * 3
-	prevBtn:scale(scaleX,scaleX)
+	prevBtn.x = xInset * 1.7
+	prevBtn.y = display.contentHeight - yInset * 2.7
+	prevBtn:scale(scaleX*.8,scaleX*.8)
 	prevBtn.alpha = 0
 	prevBtn:addEventListener("tap",gotoPrev)
 	sceneGroup:insert(prevBtn)	
 	
 	nextBtn.anchorX = 0
 	nextBtn.anchorY = 0
-	nextBtn.x = display.contentWidth - xInset * 6
-	nextBtn.y = display.contentHeight - yInset * 3
-	nextBtn:scale(scaleX,scaleX)
+	nextBtn.x = display.contentWidth - xInset * 5
+	nextBtn.y = display.contentHeight - yInset * 2.7
+	nextBtn:scale(scaleX*.8,scaleX*.8)
 	nextBtn.alpha = 0
 	nextBtn:addEventListener("tap",gotoNext)
 	sceneGroup:insert(nextBtn)	
@@ -353,9 +353,9 @@ function scene:create( event )
 	
 	pauseBtn.anchorX = 0
 	pauseBtn.anchorY = 0
-	pauseBtn.x = xInset * 7.9
-	pauseBtn.y = display.contentHeight - yInset * 3
-	pauseBtn:scale(scaleX/2,scaleX/2)
+	pauseBtn.x = xInset * 8.4
+	pauseBtn.y = display.contentHeight - yInset * 2.7
+	pauseBtn:scale(scaleX/3,scaleX/3)
 	pauseBtn:addEventListener("tap",pressPause)
 	sceneGroup:insert(pauseBtn)
 	
@@ -396,9 +396,9 @@ function scene:create( event )
 	
 	playBtn.anchorX = 0
 	playBtn.anchorY = 0
-	playBtn.x = xInset * 7.9
-	playBtn.y = display.contentHeight - yInset * 3
-	playBtn:scale(scaleX/2,scaleX/2)
+	playBtn.x = xInset * 8.4
+	playBtn.y = display.contentHeight - yInset * 2.7
+	playBtn:scale(scaleX/3,scaleX/3)
 	playBtn:addEventListener("tap",pressPlay)
 	playBtn.alpha = 0
 	sceneGroup:insert(playBtn)
