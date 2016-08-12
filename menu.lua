@@ -49,8 +49,17 @@ function scene:create( event )
 	
 	local sheet_Foot = graphics.newImageSheet("images/cover-sock.png",coverSock:getSheet())
 
-	
-	local movingFoot = display.newSprite(sheet_Foot,{frames=coverSock:getFrames()})
+	local sequences_foot= {
+		{
+			name="foot",
+			start=1,
+			count=2,
+			time= 500,
+			loopCount = 0,
+			loopDirection = "forward"
+		}
+	}
+	local movingFoot = display.newSprite(sheet_Foot,sequences_foot)
 	movingFoot.anchorX = 0
 	movingFoot.anchorY = 0
 	movingFoot.x = cover.x + localInsetX * 5.85 -- working magic number
@@ -66,7 +75,7 @@ function scene:create( event )
 	{
 		width = 75,
 		height = 78,
-		numFrames = 1
+		numFrames = 2
 	}
 	local sheet_Arm = graphics.newImageSheet("images/cover-arm.png",sheetOptionsArm)
 	local sequences_Arm = {

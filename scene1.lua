@@ -5,7 +5,11 @@ local composer = require( "composer" )
 local scene = composer.newScene( sceneName )
 
 local curScene = tonumber(sceneName:sub(6,6))
-
+local openDrawer = require("openDrawer")
+local spider = require("spider")
+local hands = require("hands")
+local light = require("light")
+local socks = require("socks")
 local xInset, yInset = display.contentWidth / 20, display.contentHeight / 20
 
 local sceneImg = sceneImages[curScene]
@@ -132,15 +136,127 @@ function scene:create( event )
 	
 	local localInsetX, localInsetY = image.contentWidth/20, image.contentHeight/20
 	
-	for i=1,#sceneParts do			
-		local aniPart = display.newImage("images/"..sceneName.."/"..sceneParts[i].file..".png")
-		aniPart.anchorX = 0
-		aniPart.anchorY = 0
-		aniPart.x = image.x + localInsetX * sceneParts[i].x
-		aniPart.y = image.y + localInsetY * sceneParts[i].y
-		aniPart:scale(scaleX,scaleX)
-		sceneGroup:insert(aniPart)
-	end
+	local sheet_light = graphics.newImageSheet("images/scene1/light.png",light:getSheet())
+
+	local sequences_light= {
+		{
+			name="light",
+			start=1,
+			count=3,
+			time= 500,
+			loopCount = 0,
+			loopDirection = "forward"
+		}
+	}
+	local lightAni = display.newSprite(sheet_light,sequences_light)
+	lightAni.anchorX = 0
+	lightAni.anchorY = 0
+	lightAni.x = image.x + localInsetX * sceneParts[5].x -- working magic number
+	lightAni.y = image.y + localInsetY * sceneParts[5].y-- working magic number
+	lightAni:scale(scaleX,scaleX)
+	lightAni:play()
+	sceneGroup:insert(lightAni)
+	
+	local sheet_hands = graphics.newImageSheet("images/scene1/hands.png",hands:getSheet())
+
+	local sequences_hands= {
+		{
+			name="hands",
+			start=1,
+			count=3,
+			time= 500,
+			loopCount = 0,
+			loopDirection = "forward"
+		}
+	}
+	local handsAni = display.newSprite(sheet_hands,sequences_hands)
+	handsAni.anchorX = 0
+	handsAni.anchorY = 0
+	handsAni.x = image.x + localInsetX * sceneParts[1].x -- working magic number
+	handsAni.y = image.y + localInsetY * sceneParts[1].y-- working magic number
+	handsAni:scale(scaleX,scaleX)
+	sceneGroup:insert(handsAni)
+	
+	local sheet_openDrawer = graphics.newImageSheet("images/scene1/openDrawer.png",openDrawer:getSheet())
+
+	local sequences_openDrawer= {
+		{
+			name="openDrawer",
+			start=1,
+			count=2,
+			time= 500,
+			loopCount = 1,
+			loopDirection = "forward"
+		}
+	}
+	local openDrawerAni = display.newSprite(sheet_openDrawer,sequences_openDrawer)
+	openDrawerAni.anchorX = 0
+	openDrawerAni.anchorY = 0
+	openDrawerAni.x = image.x + localInsetX * sceneParts[2].x -- working magic number
+	openDrawerAni.y = image.y + localInsetY * sceneParts[2].y-- working magic number
+	openDrawerAni:scale(scaleX,scaleX)
+	sceneGroup:insert(openDrawerAni)
+	
+	local sheet_socks = graphics.newImageSheet("images/scene1/socks.png",socks:getSheet())
+
+	local sequences_socks= {
+		{
+			name="socks",
+			start=1,
+			count=3,
+			time= 500,
+			loopCount = 2,
+			loopDirection = "backward"
+		}
+	}
+	local socksAni = display.newSprite(sheet_socks,sequences_socks)
+	socksAni.anchorX = 0
+	socksAni.anchorY = 0
+	socksAni.x = image.x + localInsetX * sceneParts[4].x -- working magic number
+	socksAni.y = image.y + localInsetY * sceneParts[4].y-- working magic number
+	socksAni:scale(scaleX,scaleX)
+	socksAni.alpha=0
+	sceneGroup:insert(socksAni)
+	
+	timer.performWithDelay(1000,function() 
+	socksAni.alpha=1
+	socksAni:play()
+	openDrawerAni:play()
+	handsAni:play() 
+	end)
+	
+	local sheet_spider = graphics.newImageSheet("images/scene1/spider.png",spider:getSheet())
+
+	local sequences_spider= {
+		{
+			name="spider",
+			start=1,
+			count=2,
+			time= 1000,
+			loopCount = 0,
+			loopDirection = "forward"
+		}
+	}
+	local spiderAni = display.newSprite(sheet_spider,sequences_spider)
+	spiderAni.anchorX = 0
+	spiderAni.anchorY = 0
+	spiderAni.alpha = 0
+	spiderAni.x = image.x + localInsetX * sceneParts[3].x -- working magic number
+	spiderAni.y = image.y + localInsetY * sceneParts[3].y-- working magic number
+	spiderAni:scale(scaleX,scaleX)
+	sceneGroup:insert(spiderAni)
+	timer.performWithDelay(1000,function() 
+	spiderAni.alpha=1
+	spiderAni:play() end)
+	-- for i=1,#sceneParts do			
+		-- local aniPart = display.newImage("images/"..sceneName.."/"..sceneParts[i].file..".png")
+		-- aniPart.anchorX = 0
+		-- aniPart.anchorY = 0
+		-- aniPart.x = image.x + localInsetX * sceneParts[i].x
+		-- aniPart.y = image.y + localInsetY * sceneParts[i].y
+		-- aniPart:scale(scaleX,scaleX)
+		-- sceneGroup:insert(aniPart)
+	-- end
 	
 	local gradient = display.newRect(0, display.contentHeight - yInset*2, display.contentWidth, yInset*2)
 	gradient.anchorX = 0
