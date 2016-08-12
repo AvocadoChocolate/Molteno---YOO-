@@ -206,9 +206,9 @@ function scene:create( event )
 	local homeBtn = display.newImage("images/home.png")
 	homeBtn.anchorX = 0
 	homeBtn.anchorY = 0
-	homeBtn.x = xInset * 8.5
+	homeBtn.x = xInset * 8
 	homeBtn.y = display.contentHeight - yInset * 3
-	homeBtn:scale(0.5,0.5)
+	homeBtn:scale(0.3,0.3)
 	homeBtn:addEventListener("tap",gotoHome)
 	sceneGroup:insert(homeBtn)
 
@@ -221,9 +221,9 @@ function scene:create( event )
 	local prevBtn = display.newImage("images/Previous-Page-arrow.png")
 	prevBtn.anchorX = 0
 	prevBtn.anchorY = 0
-	prevBtn.x = xInset * 2
-	prevBtn.y = display.contentHeight - yInset * 3
-	prevBtn:scale(0.8,0.8)
+	prevBtn.x = xInset * 1.7
+	prevBtn.y = display.contentHeight - yInset * 2.7
+	prevBtn:scale(0.6,0.6)
 	prevBtn.alpha = 1
 	prevBtn:addEventListener("tap",gotoPrev)
 	sceneGroup:insert(prevBtn)	
